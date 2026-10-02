@@ -10,4 +10,6 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
     Voucher findByCode(String code);
 
     List<Voucher> findByCampaignId(Long campaignId);
+
+    long countByCampaignIdAndRedeemedByAndStatus(Long campaignId, String redeemedBy, String status);
 }

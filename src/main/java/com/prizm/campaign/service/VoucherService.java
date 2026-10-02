@@ -33,6 +33,10 @@ public class VoucherService {
 
     public RedeemResponse redeem(String code, String userId) {
 
+        if (userId == null || userId.isBlank()) {
+            return RedeemResponse.fail("userId is required");
+        }
+
         Voucher voucher = voucherRepository.findByCode(code);
         if (voucher == null) {
             return RedeemResponse.fail("Voucher not found");
@@ -50,6 +54,14 @@ public class VoucherService {
 
         if (!campaign.isActive()) {
             return RedeemResponse.fail("Campaign is not active");
+        }
+
+        // Voided vouchers keep redeemed_by but are not counted: a void cancels the redemption.
+        long redeemedByUser = voucherRepository.countByCampaignIdAndRedeemedByAndStatus(
+                campaign.getId(), userId, "REDEEMED");
+        if (redeemedByUser >= campaign.getMaxRedemptionsPerUser()) {
+            return RedeemResponse.fail("User has reached the redemption limit for this campaign ("
+                    + campaign.getMaxRedemptionsPerUser() + ")");
         }
 
         if (campaign.getRemainingStock() <= 0) {

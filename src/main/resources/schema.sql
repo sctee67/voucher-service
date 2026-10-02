@@ -8,7 +8,9 @@ CREATE TABLE campaign (
     client_code     VARCHAR(50)  NOT NULL,
     total_stock     INT          NOT NULL,
     remaining_stock INT          NOT NULL,
-    active          BOOLEAN      NOT NULL DEFAULT TRUE
+    active          BOOLEAN      NOT NULL DEFAULT TRUE,
+    -- max vouchers a single user may redeem in this campaign
+    max_redemptions_per_user INT NOT NULL DEFAULT 2 CHECK (max_redemptions_per_user >= 1)
 );
 
 CREATE TABLE voucher (
