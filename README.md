@@ -22,6 +22,17 @@ H2 in-memory DB, seeded from `src/main/resources/schema.sql` + `data.sql` on sta
 | GET | `/campaigns/{id}/stats` | Stock + redemption counts |
 | GET | `/campaigns/by-client/{clientCode}/stats` | Same, per client |
 
+## Per-user redemption limit
+
+Each campaign has `max_redemptions_per_user` (default `2`). A user who already holds
+that many `REDEEMED` vouchers in the campaign gets:
+
+```json
+{"result":"FAILED","message":"User has reached the redemption limit for this campaign (2)"}
+```
+
+Voided vouchers do not count toward the limit. A blank `userId` is rejected.
+
 ## Sample data
 
 Campaign 1 (`ACME`, "Raya Flash Deal") — vouchers `RAYA-0001` … `RAYA-0006`
