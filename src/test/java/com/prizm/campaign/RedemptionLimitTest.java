@@ -116,6 +116,32 @@ class RedemptionLimitTest {
         assertEquals(98, remainingStock(1));
     }
 
+    @Test
+    void sameVoucherCannotBeRedeemedTwiceConcurrently() throws Exception {
+        ExecutorService pool = Executors.newFixedThreadPool(4);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Future<RedeemResponse>> futures = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            String user = "user-" + i;
+            futures.add(pool.submit(() -> {
+                start.await();
+                return voucherService.redeem("RAYA-0001", user);
+            }));
+        }
+        start.countDown();
+
+        int ok = 0;
+        for (Future<RedeemResponse> f : futures) {
+            if ("OK".equals(f.get().getResult())) {
+                ok++;
+            }
+        }
+        pool.shutdown();
+
+        assertEquals(1, ok);
+        assertEquals(99, remainingStock(1));
+    }
+
     private String voucherStatus(String code) {
         return jdbc.queryForObject("SELECT status FROM voucher WHERE code = ?", String.class, code);
     }
