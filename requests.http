@@ -1,0 +1,40 @@
+### Manual test requests for voucher-service.
+### Open in VS Code with the "REST Client" extension (humao.rest-client),
+### then click "Send Request" above any request.
+### Restart the app to reset the sample data.
+
+@host = http://localhost:8080
+
+### 1. Campaign 1 stats (check remainingStock before/after)
+GET {{host}}/campaigns/1/stats
+
+### 2. user-1 redeems first voucher -> OK
+POST {{host}}/vouchers/RAYA-0001/redeem?userId=user-1
+
+### 3. user-1 redeems second voucher -> OK
+POST {{host}}/vouchers/RAYA-0002/redeem?userId=user-1
+
+### 4. user-1 third voucher -> FAILED, limit reached (2)
+POST {{host}}/vouchers/RAYA-0003/redeem?userId=user-1
+
+### 5. Different user, same voucher still available -> OK (limit is per user)
+POST {{host}}/vouchers/RAYA-0003/redeem?userId=user-2
+
+### 6. user-1 in a different campaign -> OK (limit is per campaign)
+POST {{host}}/vouchers/MRDK-0001/redeem?userId=user-1
+
+### 7. user-99 already has 1 REDEEMED + 1 VOID on campaign 1.
+###    VOID does not count, so one more is allowed -> OK
+POST {{host}}/vouchers/RAYA-0006/redeem?userId=user-99
+
+### 8. Blank userId -> FAILED, "userId is required"
+POST {{host}}/vouchers/MRDK-0002/redeem?userId=
+
+### 9. Already-redeemed voucher -> FAILED (existing behaviour)
+POST {{host}}/vouchers/RAYA-0004/redeem?userId=user-3
+
+### 10. Inactive campaign -> FAILED (existing behaviour)
+POST {{host}}/vouchers/EXPD-0001/redeem?userId=user-3
+
+### 11. Stats for all ACME campaigns
+GET {{host}}/campaigns/by-client/ACME/stats
